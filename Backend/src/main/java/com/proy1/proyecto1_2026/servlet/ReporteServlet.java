@@ -23,18 +23,28 @@ public class ReporteServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         res.setHeader("Access-Control-Allow-Headers", "Content-Type");
         res.setStatus(200);
     }
 
     private boolean esAdmin(HttpServletRequest req) {
-        HttpSession s = req.getSession(false);
-        if (s == null) return false;
-        Usuario u = (Usuario) s.getAttribute("usuario");
-        return u != null && u.getIdRol() == 3;
+    String rol = req.getHeader("X-Usuario-Rol");
+    return "3".equals(rol);
+}
+
+    private boolean tieneAcceso(HttpServletRequest req, int... roles) {
+    String rolHeader = req.getHeader("X-Usuario-Rol");
+    if (rolHeader == null) return false;
+    try {
+        int rol = Integer.parseInt(rolHeader);
+        for (int r : roles) if (r == rol) return true;
+    } catch (NumberFormatException e) {
+        return false;
     }
+    return false;
+}
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {

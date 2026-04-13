@@ -33,22 +33,53 @@ public class ReservacionServlet extends HttpServlet {
     private final ClienteDAO clienteDAO = new ClienteDAO();
     private final PagoDAO pagoDAO = new PagoDAO();
 
+    private void setCors(HttpServletResponse res) {
+        res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Usuario-Id, X-Usuario-Rol");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        setCors(res);
         res.setStatus(200);
     }
 
     private Usuario usuarioSesion(HttpServletRequest req) {
-        HttpSession s = req.getSession(false);
-        if (s == null) return null;
-        return (Usuario) s.getAttribute("usuario");
+        String idHeader = req.getHeader("X-Usuario-Id");
+        String rolHeader = req.getHeader("X-Usuario-Rol");
+        if (idHeader == null || rolHeader == null) return null;
+        try {
+            Usuario u = new Usuario();
+            u.setId(Integer.parseInt(idHeader));
+            u.setIdRol(Integer.parseInt(rolHeader));
+            return u;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
+
+    private boolean esAdmin(HttpServletRequest req) {
+    String rol = req.getHeader("X-Usuario-Rol");
+    return "3".equals(rol);
+}
+
+    private boolean tieneAcceso(HttpServletRequest req, int... roles) {
+    String rolHeader = req.getHeader("X-Usuario-Rol");
+    if (rolHeader == null) return false;
+    try {
+        int rol = Integer.parseInt(rolHeader);
+        for (int r : roles) if (r == rol) return true;
+    } catch (NumberFormatException e) {
+        return false;
+    }
+    return false;
+}
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         Usuario u = usuarioSesion(req);
         if (u == null) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
@@ -83,6 +114,7 @@ public class ReservacionServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         Usuario u = usuarioSesion(req);
         if (u == null || u.getIdRol() == 2) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
@@ -190,6 +222,7 @@ public class ReservacionServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         Usuario u = usuarioSesion(req);
         if (u == null) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {

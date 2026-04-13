@@ -102,6 +102,18 @@ public class UsuarioDAO {
             new Conexion().desconectar(con);
         }
     }
+    
+    public boolean activar(int idUsuario) throws SQLException {
+    String sql = "UPDATE usuarios SET activo = 1 WHERE id = ?";
+    Connection con = Conexion.obtenerConexion();
+    try {
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, idUsuario);
+        return ps.executeUpdate() > 0;
+    } finally {
+            new Conexion().desconectar(con);
+    }
+}
 
     public boolean existeNombre(String nombre) throws SQLException {
         String sql = "SELECT id FROM usuarios WHERE nombre_usuario = ?";

@@ -27,20 +27,28 @@ public class DestinoServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         res.setHeader("Access-Control-Allow-Headers", "Content-Type");
         res.setStatus(200);
     }
 
+   private boolean esAdmin(HttpServletRequest req) {
+    String rol = req.getHeader("X-Usuario-Rol");
+    return "3".equals(rol);
+}
+
     private boolean tieneAcceso(HttpServletRequest req, int... roles) {
-        HttpSession s = req.getSession(false);
-        if (s == null) return false;
-        Usuario u = (Usuario) s.getAttribute("usuario");
-        if (u == null) return false;
-        for (int rol : roles) if (u.getIdRol() == rol) return true;
+    String rolHeader = req.getHeader("X-Usuario-Rol");
+    if (rolHeader == null) return false;
+    try {
+        int rol = Integer.parseInt(rolHeader);
+        for (int r : roles) if (r == rol) return true;
+    } catch (NumberFormatException e) {
         return false;
     }
+    return false;
+}
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {

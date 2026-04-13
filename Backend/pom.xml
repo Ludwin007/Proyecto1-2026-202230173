@@ -3,18 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.proy1.proyecto1_2026</groupId>
     <artifactId>horizontes-backend</artifactId>
     <version>1.0</version>
     <packaging>war</packaging>
-
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -23,9 +20,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <version>8.0.33</version>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.3.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -39,9 +36,8 @@
             <type>pom</type>
         </dependency>
     </dependencies>
-
     <build>
-        <finalName>agencia</finalName>
+        <finalName>Proyecto1_2026</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

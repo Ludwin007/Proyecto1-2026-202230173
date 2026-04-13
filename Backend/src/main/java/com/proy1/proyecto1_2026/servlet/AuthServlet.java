@@ -26,16 +26,22 @@ public class AuthServlet extends HttpServlet {
 
     private final UsuarioDAO dao = new UsuarioDAO();
 
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        res.setHeader("Access-Control-Allow-Origin", "*");
+    private void setCors(HttpServletResponse res) {
+        res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         res.setStatus(200);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         String ruta = req.getPathInfo();
         if ("/login".equals(ruta)) {
             login(req, res);
@@ -48,6 +54,7 @@ public class AuthServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         String ruta = req.getPathInfo();
         if ("/sesion".equals(ruta)) {
             verificarSesion(req, res);

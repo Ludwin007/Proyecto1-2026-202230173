@@ -7,7 +7,6 @@ package com.proy1.proyecto1_2026.servlet;
 import com.proy1.proyecto1_2026.dao.ClienteDAO;
 import com.proy1.proyecto1_2026.dao.ReservacionDAO;
 import com.proy1.proyecto1_2026.modelo.Cliente;
-import com.proy1.proyecto1_2026.modelo.Usuario;
 import com.proy1.proyecto1_2026.util.LectorBody;
 import com.proy1.proyecto1_2026.util.Respuesta;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,23 +27,27 @@ public class ClienteServlet extends HttpServlet {
     private final ClienteDAO dao = new ClienteDAO();
     private final ReservacionDAO reservacionDAO = new ReservacionDAO();
 
+    private void setCors(HttpServletResponse res) {
+        res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Usuario-Id, X-Usuario-Rol, Authorization");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        setCors(res);
         res.setStatus(200);
     }
 
     private boolean tieneAcceso(HttpServletRequest req) {
-        HttpSession s = req.getSession(false);
-        if (s == null) return false;
-        Usuario u = (Usuario) s.getAttribute("usuario");
-        return u != null;
+        String rolHeader = req.getHeader("X-Usuario-Rol");
+        return rolHeader != null;
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         if (!tieneAcceso(req)) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
             String ruta = req.getPathInfo();
@@ -78,6 +81,7 @@ public class ClienteServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         if (!tieneAcceso(req)) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
             String body = LectorBody.leer(req);
@@ -109,6 +113,7 @@ public class ClienteServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         if (!tieneAcceso(req)) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
             String ruta = req.getPathInfo();

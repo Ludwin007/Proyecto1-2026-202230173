@@ -8,7 +8,7 @@
 
     <filter>
         <filter-name>CorsFilter</filter-name>
-        <filter-class>com.agencia.util.CorsFilter</filter-class>
+        <filter-class>com.proy1.proyecto1_2026.util.CorsFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CorsFilter</filter-name>

@@ -26,23 +26,39 @@ public class UsuarioServlet extends HttpServlet {
 
     private final UsuarioDAO dao = new UsuarioDAO();
 
+    private void setCors(HttpServletResponse res) {
+        res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Usuario-Id, X-Usuario-Rol, Authorization");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        setCors(res);
         res.setStatus(200);
     }
 
     private boolean esAdmin(HttpServletRequest req) {
-        HttpSession s = req.getSession(false);
-        if (s == null) return false;
-        Usuario u = (Usuario) s.getAttribute("usuario");
-        return u != null && u.getIdRol() == 3;
+        String rol = req.getHeader("X-Usuario-Rol");
+        return "3".equals(rol);
+    }
+
+    private boolean tieneAcceso(HttpServletRequest req, int... roles) {
+        String rolHeader = req.getHeader("X-Usuario-Rol");
+        if (rolHeader == null) return false;
+        try {
+            int rol = Integer.parseInt(rolHeader);
+            for (int r : roles) if (r == rol) return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return false;
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         if (!esAdmin(req)) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
             Respuesta.exito(res, dao.listar());
@@ -53,6 +69,7 @@ public class UsuarioServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         if (!esAdmin(req)) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
             String body = LectorBody.leer(req);
@@ -78,6 +95,7 @@ public class UsuarioServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         if (!esAdmin(req)) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
             String ruta = req.getPathInfo();
@@ -86,11 +104,18 @@ public class UsuarioServlet extends HttpServlet {
             int id = Integer.parseInt(partes[1]);
             String body = LectorBody.leer(req);
             JsonObject json = JsonParser.parseString(body).getAsJsonObject();
-            int nuevoRol = json.get("idRol").getAsInt();
-            dao.cambiarRol(id, nuevoRol);
-            Map<String, String> resp = new HashMap<>();
-            resp.put("mensaje", "Rol actualizado correctamente.");
-            Respuesta.exito(res, resp);
+            if (json.has("activar") && json.get("activar").getAsBoolean()) {
+                dao.activar(id);
+                Map<String, String> resp = new HashMap<>();
+                resp.put("mensaje", "Usuario activado correctamente.");
+                Respuesta.exito(res, resp);
+            } else {
+                int nuevoRol = json.get("idRol").getAsInt();
+                dao.cambiarRol(id, nuevoRol);
+                Map<String, String> resp = new HashMap<>();
+                resp.put("mensaje", "Rol actualizado correctamente.");
+                Respuesta.exito(res, resp);
+            }
         } catch (Exception e) {
             Respuesta.error(res, 500, e.getMessage());
         }
@@ -98,6 +123,7 @@ public class UsuarioServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        setCors(res);
         if (!esAdmin(req)) { Respuesta.error(res, 403, "Acceso denegado."); return; }
         try {
             String ruta = req.getPathInfo();
